@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Control Tower - Admin</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="brand-mark small"></div>
+      <div>
+        <h1 class="page-title">CONTROL TOWER</h1>
+        <p class="page-subtitle">Área Administrativa</p>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <div class="top-info">
+        <span id="adminUser">Administrador</span>
+        <small>Perfil admin</small>
+      </div>
+      <button id="goPanelBtn" class="btn-secondary">Ver Painel</button>
+      <button id="logoutAdminBtn" class="btn-danger">Sair</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero-bar">
+      <div>
+        <h2>Atualização dos Dados</h2>
+        <p>Importe arquivos Excel e atualize o painel central</p>
+      </div>
+      <div class="hero-meta">
+        <div class="hero-tag" id="adminLastUpdate">Última atualização: --</div>
+      </div>
+    </section>
+
+    <section class="admin-grid">
+      <div class="card">
+        <div class="section-header">
+          <h3>Importar Excel</h3>
+        </div>
+
+        <p class="text-soft">
+          Você pode importar um ou mais arquivos Excel (.xlsx/.xls). O sistema vai ler a primeira aba de cada arquivo.
+        </p>
+
+        <div class="field">
+          <label for="excelFiles">Arquivos Excel</label>
+          <input type="file" id="excelFiles" accept=".xlsx,.xls" multiple />
+        </div>
+
+        <div class="button-row">
+          <button id="importExcelBtn" class="btn-primary">Importar Excel</button>
+          <button id="loadSampleBtn" class="btn-secondary">Carregar Exemplo</button>
+          <button id="clearDataBtn" class="btn-danger">Limpar Dados</button>
+        </div>
+
+        <div id="adminMessage" class="message-box"></div>
+      </div>
+
+      <div class="card">
+        <div class="section-header">
+          <h3>Status do Sistema</h3>
+        </div>
+
+        <div class="status-list">
+          <div class="status-item">
+            <span>Última atualização</span>
+            <strong id="statusLastUpdate">--</strong>
+          </div>
+
+          <div class="status-item">
+            <span>Total de linhas</span>
+            <strong id="statusRows">0</strong>
+          </div>
+
+          <div class="status-item">
+            <span>Total de bases</span>
+            <strong id="statusBases">0</strong>
+          </div>
+
+          <div class="status-item">
+            <span>Total geral</span>
+            <strong id="statusTotal">0</strong>
+          </div>
+
+          <div class="status-item">
+            <span>Entregues</span>
+            <strong id="statusDelivered">0</strong>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-header">
+        <h3>Colunas recomendadas</h3>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Colunas</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Detalhado</td>
+              <td>Base de entrega, Entregador, Horário da entrega, Motivos dos pacotes problemáticos</td>
+            </tr>
+            <tr>
+              <td>Resumo</td>
+              <td>Base de entrega, Número total de expedido, Número de pacotes assinados, Não entregue, Pacote problemático, Pacote não expedido</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="supabase-config.js"></script>
+
+<script src="main.js"></script>
+
+</body>
+</html>
+</body>
+</html>

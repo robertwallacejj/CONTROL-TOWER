@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Control Tower - Painel</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="brand-mark small"></div>
+      <div>
+        <h1 class="page-title">CONTROL TOWER</h1>
+        <p class="page-subtitle">Painel Operacional</p>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <div class="top-info">
+        <span id="loggedUser">Usuário</span>
+        <small id="loggedRole">Perfil</small>
+      </div>
+      <button id="goAdminBtn" class="btn-secondary">Área Admin</button>
+      <button id="logoutBtn" class="btn-danger">Sair</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="hero-bar">
+      <div>
+        <h2>Painel Geral</h2>
+        <p>Acompanhamento centralizado da operação</p>
+      </div>
+      <div class="hero-meta">
+        <div class="hero-tag" id="lastUpdateText">Última atualização: --</div>
+        <div class="hero-tag">Atualização visual: 20 min</div>
+      </div>
+    </section>
+
+    <section class="card control-bar">
+      <div class="control-left">
+        <label for="gridSelector">Grid:</label>
+        <select id="gridSelector">
+          <option value="1">1x1</option>
+          <option value="2" selected>2x2</option>
+          <option value="3">3x3</option>
+          <option value="4">4x4</option>
+        </select>
+
+        <div class="download-panel">
+          <button class="btn-secondary" id="downloadToggle">Baixar imagens ▾</button>
+          <div class="download-list" id="downloadList" style="display:none">
+            <label><input type="checkbox" id="selectAllDownloads"> Selecionar todos</label>
+            <div id="downloadItems" class="download-items"></div>
+            <button class="btn-secondary" id="downloadSelected">Baixar selecionados</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="control-center">
+        <input type="text" id="searchInput" placeholder="Buscar base..." />
+        <button class="search-btn" id="searchBtn">Buscar</button>
+      </div>
+
+      <div class="control-right">
+        <div id="globalSummary"></div>
+        <div class="global-chart">
+          <canvas id="globalChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="tab-bar">
+      <button class="tab-btn active" data-tab="monitorTab">Monitor por Base</button>
+      <button class="tab-btn" data-tab="towerTab">Control Tower</button>
+    </section>
+
+    <section id="monitorTab" class="tab-panel active">
+      <section id="dashboardsContent" class="dashboards-list"></section>
+    </section>
+
+    <section id="towerTab" class="tab-panel">
+      <div class="control-tower-shell">
+        <div class="ct-controls card">
+          <div class="field">
+            <label for="baseFilter">Base</label>
+            <select id="baseFilter">
+              <option value="all">Todas as Bases</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="ct-grid">
+          <div class="card ct-card">
+            <h3>Total Expedido</h3>
+            <div class="value" id="totalExpedido">0</div>
+          </div>
+
+          <div class="card ct-card">
+            <h3>Entregues</h3>
+            <div class="value" id="assinados">0</div>
+          </div>
+
+          <div class="card ct-card" id="taxaCard">
+            <h3>Taxa Entrega</h3>
+            <div class="value" id="taxa">0%</div>
+          </div>
+
+          <div class="card ct-card">
+            <h3>Não Entregue</h3>
+            <div class="value" id="naoEntregue">0</div>
+          </div>
+
+          <div class="card ct-card">
+            <h3>Pendente</h3>
+            <div class="value" id="naoExpedido">0</div>
+          </div>
+
+          <div class="card ct-card">
+            <h3>Problemático</h3>
+            <div class="value" id="problematico">0</div>
+          </div>
+        </div>
+
+        <div class="ct-charts">
+          <canvas id="statusChart"></canvas>
+          <canvas id="basesChart"></canvas>
+        </div>
+
+        <div class="ct-ranking">
+          <div class="card">
+            <h2>🏆 Top 10 Melhores Bases</h2>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Base</th>
+                    <th class="t-right">SLA</th>
+                  </tr>
+                </thead>
+                <tbody id="topBases"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>⚠️ Top 10 Piores Bases</h2>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Base</th>
+                    <th class="t-right">SLA</th>
+                  </tr>
+                </thead>
+                <tbody id="worstBases"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="sectionTitle">📊 Ranking por Regionais</h2>
+
+        <div class="ct-ranking ct-regionals">
+          <div class="card">
+            <h3>Regional Claudio</h3>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Base</th>
+                    <th class="t-right">Exp</th>
+                    <th class="t-right">Ent</th>
+                    <th class="t-right">Pend</th>
+                    <th class="t-right">Prob</th>
+                    <th class="t-right">SLA</th>
+                  </tr>
+                </thead>
+                <tbody id="regionalClaudio"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Regional Rodrigo</h3>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Base</th>
+                    <th class="t-right">Exp</th>
+                    <th class="t-right">Ent</th>
+                    <th class="t-right">Pend</th>
+                    <th class="t-right">Prob</th>
+                    <th class="t-right">SLA</th>
+                  </tr>
+                </thead>
+                <tbody id="regionalRodrigo"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Regional Neto</h3>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Base</th>
+                    <th class="t-right">Exp</th>
+                    <th class="t-right">Ent</th>
+                    <th class="t-right">Pend</th>
+                    <th class="t-right">Prob</th>
+                    <th class="t-right">SLA</th>
+                  </tr>
+                </thead>
+                <tbody id="regionalNeto"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>Regional Luana</h3>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Base</th>
+                    <th class="t-right">Exp</th>
+                    <th class="t-right">Ent</th>
+                    <th class="t-right">Pend</th>
+                    <th class="t-right">Prob</th>
+                    <th class="t-right">SLA</th>
+                  </tr>
+                </thead>
+                <tbody id="regionalLuana"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="supabase-config.js"></script>
+
+<script src="main.js"></script>
+
+</body>
+</html>
+</body>
+</html>
