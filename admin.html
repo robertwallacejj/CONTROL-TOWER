@@ -31,10 +31,11 @@
     <section class="hero-bar">
       <div>
         <h2>Atualização dos Dados</h2>
-        <p>Importe arquivos Excel e atualize o painel central</p>
+        <p>Importe arquivos Excel, valide a estrutura e publique uma nova atualização do painel.</p>
       </div>
       <div class="hero-meta">
         <div class="hero-tag" id="adminLastUpdate">Última atualização: --</div>
+        <div class="hero-tag" id="adminImportModeBadge">Modo: Substituir base atual</div>
       </div>
     </section>
 
@@ -42,24 +43,36 @@
       <div class="card">
         <div class="section-header">
           <h3>Importar Excel</h3>
+          <span class="badge badge-neutral" id="importPreviewBadge">Nenhum arquivo selecionado</span>
         </div>
 
         <p class="text-soft">
-          Você pode importar um ou mais arquivos Excel (.xlsx/.xls). O sistema vai ler a primeira aba de cada arquivo.
+          Fluxo aplicado: importar arquivo, validar estrutura, normalizar colunas, classificar linhas e atualizar métricas.
         </p>
 
-        <div class="field">
-          <label for="excelFiles">Arquivos Excel</label>
-          <input type="file" id="excelFiles" accept=".xlsx,.xls" multiple />
+        <div class="grid-2">
+          <div class="field">
+            <label for="importMode">Modo de importação</label>
+            <select id="importMode">
+              <option value="replace" selected>Substituir base atual</option>
+              <option value="append">Adicionar à base atual</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="excelFiles">Arquivos Excel</label>
+            <input type="file" id="excelFiles" accept=".xlsx,.xls" multiple />
+          </div>
         </div>
 
         <div class="button-row">
           <button id="importExcelBtn" class="btn-primary">Importar Excel</button>
           <button id="loadSampleBtn" class="btn-secondary">Carregar Exemplo</button>
+          <button id="undoImportBtn" class="btn-secondary">Desfazer última importação</button>
           <button id="clearDataBtn" class="btn-danger">Limpar Dados</button>
         </div>
 
-        <div id="adminMessage" class="message-box"></div>
+        <div id="adminMessage" class="message-box" aria-live="polite"></div>
       </div>
 
       <div class="card">
@@ -68,69 +81,76 @@
         </div>
 
         <div class="status-list">
-          <div class="status-item">
-            <span>Última atualização</span>
-            <strong id="statusLastUpdate">--</strong>
-          </div>
-
-          <div class="status-item">
-            <span>Total de linhas</span>
-            <strong id="statusRows">0</strong>
-          </div>
-
-          <div class="status-item">
-            <span>Total de bases</span>
-            <strong id="statusBases">0</strong>
-          </div>
-
-          <div class="status-item">
-            <span>Total geral</span>
-            <strong id="statusTotal">0</strong>
-          </div>
-
-          <div class="status-item">
-            <span>Entregues</span>
-            <strong id="statusDelivered">0</strong>
-          </div>
+          <div class="status-item"><span>Última atualização</span><strong id="statusLastUpdate">--</strong></div>
+          <div class="status-item"><span>Total de linhas</span><strong id="statusRows">0</strong></div>
+          <div class="status-item"><span>Total de bases</span><strong id="statusBases">0</strong></div>
+          <div class="status-item"><span>Total geral</span><strong id="statusTotal">0</strong></div>
+          <div class="status-item"><span>Entregues</span><strong id="statusDelivered">0</strong></div>
+          <div class="status-item"><span>Último usuário</span><strong id="statusUpdatedBy">--</strong></div>
         </div>
       </div>
     </section>
 
     <section class="card">
       <div class="section-header">
-        <h3>Colunas recomendadas</h3>
+        <h3>Pré-visualização da importação</h3>
+        <span class="text-soft" id="previewTimestamp">Nenhuma leitura em andamento</span>
       </div>
 
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Tipo</th>
-              <th>Colunas</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Detalhado</td>
-              <td>Base de entrega, Entregador, Horário da entrega, Motivos dos pacotes problemáticos</td>
-            </tr>
-            <tr>
-              <td>Resumo</td>
-              <td>Base de entrega, Número total de expedido, Número de pacotes assinados, Não entregue, Pacote problemático, Pacote não expedido</td>
-            </tr>
-          </tbody>
-        </table>
+      <div id="importPreviewEmpty" class="empty-state compact">
+        <h4>Nenhum arquivo foi importado ainda</h4>
+        <p>Selecione um ou mais arquivos para validar as abas e conferir as colunas antes de salvar.</p>
+      </div>
+
+      <div id="importPreviewWrap" class="preview-list" hidden></div>
+    </section>
+
+    <section class="admin-grid">
+      <div class="card">
+        <div class="section-header">
+          <h3>Resumo da leitura</h3>
+        </div>
+
+        <div class="status-list">
+          <div class="status-item"><span>Arquivos analisados</span><strong id="previewFileCount">0</strong></div>
+          <div class="status-item"><span>Linhas válidas</span><strong id="previewValidRows">0</strong></div>
+          <div class="status-item"><span>Linhas inválidas</span><strong id="previewInvalidRows">0</strong></div>
+          <div class="status-item"><span>Abas ignoradas</span><strong id="previewIgnoredSheets">0</strong></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="section-header">
+          <h3>Colunas esperadas</h3>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Tipo</th><th>Colunas</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Detalhado</td>
+                <td>Base de entrega, Entregador, Horário da entrega, Motivos dos pacotes problemáticos</td>
+              </tr>
+              <tr>
+                <td>Resumo</td>
+                <td>Número total de expedido, Número de pacotes assinados, Não entregue, Pacote problemático, Pacote não expedido</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script src="supabase-config.js"></script>
-
-<script src="main.js"></script>
-
-</body>
-</html>
+  <script src="supabase-config.js"></script>
+  <script src="utils.js"></script>
+  <script src="excel.js"></script>
+  <script src="metrics.js"></script>
+  <script src="admin.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>

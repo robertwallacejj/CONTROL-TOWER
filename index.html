@@ -32,10 +32,11 @@
     <section class="hero-bar">
       <div>
         <h2>Painel Geral</h2>
-        <p>Acompanhamento centralizado da operação</p>
+        <p>Acompanhamento centralizado da operação com foco em decisão rápida.</p>
       </div>
       <div class="hero-meta">
         <div class="hero-tag" id="lastUpdateText">Última atualização: --</div>
+        <div class="hero-tag" id="compareBadge">Sem comparação anterior</div>
         <div class="hero-tag">Atualização visual: 20 min</div>
       </div>
     </section>
@@ -44,15 +45,31 @@
       <div class="control-left">
         <label for="gridSelector">Grid:</label>
         <select id="gridSelector">
-          <option value="1">1x1</option>
-          <option value="2" selected>2x2</option>
-          <option value="3">3x3</option>
-          <option value="4">4x4</option>
+          <option value="1">1 coluna</option>
+          <option value="2" selected>2 colunas</option>
+          <option value="3">3 colunas</option>
+          <option value="4">4 colunas</option>
         </select>
+
+        <div class="field-inline">
+          <label for="regionalFilter">Regional</label>
+          <select id="regionalFilter">
+            <option value="all">Todas</option>
+          </select>
+        </div>
+
+        <div class="field-inline">
+          <label for="statusFilter">Status</label>
+          <select id="statusFilter">
+            <option value="all">Todos</option>
+            <option value="critical">Críticas</option>
+            <option value="healthy">Acima da meta</option>
+          </select>
+        </div>
 
         <div class="download-panel">
           <button class="btn-secondary" id="downloadToggle">Baixar imagens ▾</button>
-          <div class="download-list" id="downloadList" style="display:none">
+          <div class="download-list" id="downloadList" hidden>
             <label><input type="checkbox" id="selectAllDownloads"> Selecionar todos</label>
             <div id="downloadItems" class="download-items"></div>
             <button class="btn-secondary" id="downloadSelected">Baixar selecionados</button>
@@ -79,6 +96,10 @@
     </section>
 
     <section id="monitorTab" class="tab-panel active">
+      <section id="dashboardsEmpty" class="empty-state" hidden>
+        <h3>Nenhum arquivo foi importado ainda</h3>
+        <p>Peça ao administrador para carregar a planilha. A última atualização ficará disponível assim que houver dados.</p>
+      </section>
       <section id="dashboardsContent" class="dashboards-list"></section>
     </section>
 
@@ -89,6 +110,19 @@
             <label for="baseFilter">Base</label>
             <select id="baseFilter">
               <option value="all">Todas as Bases</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="metaSlaInput">Meta SLA (%)</label>
+            <input type="number" id="metaSlaInput" min="0" max="100" step="1" value="90" />
+          </div>
+
+          <div class="field">
+            <label for="towerSort">Ordenar ranking</label>
+            <select id="towerSort">
+              <option value="asc">Piores primeiro</option>
+              <option value="desc">Melhores primeiro</option>
             </select>
           </div>
         </div>
@@ -122,6 +156,61 @@
           <div class="card ct-card">
             <h3>Problemático</h3>
             <div class="value" id="problematico">0</div>
+          </div>
+        </div>
+
+        <div class="ct-kpis-extra">
+          <div class="card mini-kpi">
+            <h4>Bases abaixo da meta</h4>
+            <strong id="belowTargetCount">0</strong>
+          </div>
+          <div class="card mini-kpi">
+            <h4>Bases acima da meta</h4>
+            <strong id="aboveTargetCount">0</strong>
+          </div>
+          <div class="card mini-kpi">
+            <h4>Pendência atual</h4>
+            <strong id="pendingCurrentCount">0</strong>
+          </div>
+          <div class="card mini-kpi">
+            <h4>Taxa de insucesso</h4>
+            <strong id="failureRateText">0%</strong>
+          </div>
+        </div>
+
+        <div class="ct-priority-grid">
+          <div class="card">
+            <h2>🚨 Top 5 bases que precisam de ação</h2>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Base</th>
+                    <th class="t-right">SLA</th>
+                    <th class="t-right">Pend.</th>
+                    <th class="t-right">Insuc.</th>
+                  </tr>
+                </thead>
+                <tbody id="criticalBases"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>👷 Ranking por entregador</h2>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Entregador</th>
+                    <th>Base</th>
+                    <th class="t-right">Total</th>
+                    <th class="t-right">SLA</th>
+                  </tr>
+                </thead>
+                <tbody id="driverRanking"></tbody>
+              </table>
+            </div>
           </div>
         </div>
 
@@ -167,6 +256,7 @@
         <div class="ct-ranking ct-regionals">
           <div class="card">
             <h3>Regional Claudio</h3>
+            <div class="regional-summary" id="regionalSummaryClaudio">Sem dados</div>
             <div class="table-scroll">
               <table>
                 <thead>
@@ -186,6 +276,7 @@
 
           <div class="card">
             <h3>Regional Rodrigo</h3>
+            <div class="regional-summary" id="regionalSummaryRodrigo">Sem dados</div>
             <div class="table-scroll">
               <table>
                 <thead>
@@ -205,6 +296,7 @@
 
           <div class="card">
             <h3>Regional Neto</h3>
+            <div class="regional-summary" id="regionalSummaryNeto">Sem dados</div>
             <div class="table-scroll">
               <table>
                 <thead>
@@ -224,6 +316,7 @@
 
           <div class="card">
             <h3>Regional Luana</h3>
+            <div class="regional-summary" id="regionalSummaryLuana">Sem dados</div>
             <div class="table-scroll">
               <table>
                 <thead>
@@ -246,12 +339,11 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script src="supabase-config.js"></script>
-
-<script src="main.js"></script>
-
-</body>
-</html>
+  <script src="supabase-config.js"></script>
+  <script src="utils.js"></script>
+  <script src="metrics.js"></script>
+  <script src="charts.js"></script>
+  <script src="dashboard.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>
